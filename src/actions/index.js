@@ -10,13 +10,17 @@ function getUrl(route) {
     return `${ROOT_URL}${route}${API_KEY}`;
 }
 
+function handleResponse(response, responseDefault = null) {
+    if (!response || !response.data) {
+        return responseDefault;
+    }
+    return response.data;
+}
+
 export function fetchPosts() {
     const request = axios.get(getUrl('/posts'))
         .then((response) => {
-            if (!response || !response.data) {
-                return [];
-            }
-            return response.data;
+            return handleResponse(response, []);
         });
 
     return {
@@ -25,13 +29,14 @@ export function fetchPosts() {
     };
 }
 
-export function createPost(values) {
+export function createPost(values, callback) {
     const request = axios.post(getUrl('/posts'), values)
         .then((response) => {
-            if (!response || !response.data) {
-                return null;
-            }
-            return response.data;
+            return handleResponse(response, null);
+        })
+        .then((response) => {
+            callback();
+            return response;
         });
 
     return {
