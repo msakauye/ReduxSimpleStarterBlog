@@ -1,19 +1,34 @@
+import _ from 'lodash';
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Field, reduxForm } from 'redux-form';
 import { connect } from 'react-redux';
 import { createPost } from '../actions';
 
+const FIELDS = {
+    title: {
+        label: 'Title',
+        type: 'input'
+    },
+    categories: {
+        label: 'Categories',
+        type: 'input'
+    },
+    content: {
+        label: 'Content',
+        type: 'textarea'
+    }
+};
+
 class PostsNew extends Component {
-    renderField(field) {
+    renderFieldComponent(field) {
         const { meta: { touched, error }, input, label } = field;
         const className = `form-group ${touched && error ? 'has-danger' : ''}`;
         
         return (
             <div className={className}>
                 <label htmlFor={input.name}>{label}</label>
-                <input 
-                    type="text"
+                <field.type 
                     className="form-control" 
                     {...input}
                 />
@@ -21,6 +36,18 @@ class PostsNew extends Component {
                     {touched ? error : ''}
                 </div>
             </div>
+        );
+    }
+
+    renderField({label, type}, name) {
+        return (
+            <Field
+                key={name}
+                name={name}
+                label={label}
+                type={type}
+                component={this.renderFieldComponent}
+            />
         );
     }
 
@@ -32,6 +59,9 @@ class PostsNew extends Component {
 
     render() {
         const { handleSubmit } = this.props;
+        const fields = _.map(FIELDS, (config, field) => {
+            return this.renderField
+        });
 
         return (
             <div>
@@ -39,21 +69,7 @@ class PostsNew extends Component {
                     <Link to="/">&lt; Go back to posts</Link>
                 </div>
                 <form onSubmit={handleSubmit(this.onSubmit.bind(this))}>
-                    <Field
-                        name="title"
-                        label="Title"
-                        component={this.renderField}
-                    />
-                    <Field
-                        name="categories"
-                        label="Categories"
-                        component={this.renderField}
-                    />
-                    <Field
-                        name="content"
-                        label="Content"
-                        component={this.renderField}
-                    />
+                    {_.map(FIELDS, (config, field) => this.renderField(config, field))}
                     <button className="btn btn-primary" type="Submit">Submit</button>
                     <Link className="btn btn-danger" to="/">Cancel</Link>
                 </form>
@@ -65,19 +81,11 @@ class PostsNew extends Component {
 function validate(values) {
     const errors = {};
 
-    if (!values.title) {
-        errors.title = 'Enter a title';
-    } else if (values.title.length < 3) {
-        errors.title = 'Enter a title that is at least 3 characters';
-    }
-
-    if (!values.categories) {
-        errors.categories = 'Enter some categories';
-    }
-
-    if (!values.content) {
-        errors.content = 'Enter some content';
-    }
+    _.each(FIELDS, (config, field) => {
+        if (!values[field]) {
+            errors[field] = `Enter a ${field}`;
+        }
+    });
 
     return errors;
 }
