@@ -10,9 +10,7 @@ export default function(state = {}, action) {
         case FETCH_POST:
             return { ...state, [action.payload.id]: action.payload };
         case DELETE_POST:
-            const newState = { ...state };
-            delete newState[action.payload];
-            return newState;
+            return _.omit(state, action.payload);
         default:
             return state;
     }
